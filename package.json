@@ -1,0 +1,26 @@
+{
+  "name": "cashtrackr_backend",
+  "version": "1.0.0",
+  "description": "Proyecto CashTrackr React TypeScript y Node.js",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.ts",
+    "dev:api": "nodemon src/index.ts --api",
+    "build": "tsc",
+    "start": "node ./dist/index.js"
+  },
+  "author": "Santiago Vela",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^5.0.6",
+    "colors": "^1.4.0",
+    "express": "^5.2.1",
+    "morgan": "^1.10.1",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/morgan": "^1.9.10"
+  }
+}
