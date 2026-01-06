@@ -7,7 +7,7 @@ const router = Router()
 
 router.get('/', BudgetController.getAll)
 
-router.post('/', 
+router.post('/',
     body('name')
         .notEmpty().withMessage('El campo nombre no puede ir vacio'),
     body('amount')
@@ -16,14 +16,33 @@ router.post('/',
         .custom(value => value > 0).withMessage('El presupuesto debe ser mayor a 0'),
     handleInputErrors,
     BudgetController.create)
-router.get('/:id', 
+
+router.get('/:id',
     param('id')
         .isInt().withMessage('Id No valido')
-        .custom( value => value > 0).withMessage('id no valido'),
+        .custom(value => value > 0).withMessage('id no valido'),
     handleInputErrors,
     BudgetController.getById)
-router.put('/:id', BudgetController.updateById)
-router.delete('/:id', BudgetController.deleteById)
+
+router.put('/:id',
+    param('id')
+        .isInt().withMessage('Id No valido')
+        .custom(value => value > 0).withMessage('id no valido'),
+    body('name')
+        .notEmpty().withMessage('El campo nombre no puede ir vacio'),
+    body('amount')
+        .notEmpty().withMessage('La cantidad del presupuesto no puede ir vacia')
+        .isNumeric().withMessage('Cantidad no valida')
+        .custom(value => value > 0).withMessage('El presupuesto debe ser mayor a 0'),
+    handleInputErrors,
+    BudgetController.updateById)
+
+router.delete('/:id',
+    param('id')
+        .isInt().withMessage('Id No valido')
+        .custom(value => value > 0).withMessage('id no valido'),
+    handleInputErrors,
+    BudgetController.deleteById)
 
 
 export default router
