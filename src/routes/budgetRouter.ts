@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { body, param } from 'express-validator'
 import { BudgetController } from '../controllers/BudgetController'
 import { handleInputErrors } from '../middleware/validation'
-import { validateBudgetId } from '../middleware/budget'
+import { validateBudgetExists, validateBudgetId } from '../middleware/budget'
 
 const router = Router()
 
@@ -20,11 +20,13 @@ router.post('/',
 
 router.get('/:id',
     validateBudgetId,
+    validateBudgetExists,
     handleInputErrors,
     BudgetController.getById)
 
 router.put('/:id',
     validateBudgetId,
+    validateBudgetExists,
     body('name')
         .notEmpty().withMessage('El campo nombre no puede ir vacio'),
     body('amount')
@@ -37,6 +39,7 @@ router.put('/:id',
 router.delete('/:id',
     validateBudgetId,
     handleInputErrors,
+    validateBudgetExists,
     BudgetController.deleteById)
 
 

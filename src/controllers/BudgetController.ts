@@ -28,57 +28,15 @@ export class BudgetController {
         }
     }
     static getById = async (req: Request, res: Response) => {
-        try {
-            const { id } = req.params
-            const budget = await Budget.findByPk(id, {})
-
-            if (!budget) {
-                const error = new Error('Presupuesto no encontrado')
-                res.status(404).json({ error: error.message })
-                return
-            }
-
-            res.json(budget)
-        } catch (error) {
-            //console.log(error)
-            res.status(500).json({ error: 'Ocurrio un error' })
-        }
+        res.json(req.budget)
     }
     static updateById = async (req: Request, res: Response) => {
-        try {
-            const { id } = req.params
-            const budget = await Budget.findByPk(id, {})
-
-            if (!budget) {
-                const error = new Error('Presupuesto no encontrado')
-                res.status(404).json({ error: error.message })
-                return
-            }
-
-            await budget.update(req.body)
-            res.status(200).json('Presupuesto actualizado con exito!')
-        } catch (error) {
-            //console.log(error)
-            res.status(500).json({ error: 'Ocurrio un error' })
-        }
+        await req.budget.update(req.body)
+        res.status(200).json('Presupuesto actualizado con exito!')
     }
     static deleteById = async (req: Request, res: Response) => {
-        try {
-            const { id } = req.params
-            const budget = await Budget.findByPk(id, {})
-
-            if (!budget) {
-                const error = new Error('Presupuesto no encontrado')
-                res.status(404).json({ error: error.message })
-                return
-            }
-
-            await budget.destroy()
+        await req.budget.destroy()
             res.json('Presupuesto ha sido eliminado con exito!')
-        } catch (error) {
-            //console.log(error)
-            res.status(500).json({ error: 'Ocurrio un error' })
-        }
     }
 
 }
