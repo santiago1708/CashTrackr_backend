@@ -3,6 +3,7 @@ import { body, param } from 'express-validator'
 import { BudgetController } from '../controllers/BudgetController'
 import { handleInputErrors } from '../middleware/validation'
 import { validateBudgetExists, validateBudgetId, validateBudgetInput } from '../middleware/budget'
+import routerExpense from './expenseRouter'
 
 const router = Router()
 
@@ -26,5 +27,5 @@ router.put('/:budgetId',
 router.delete('/:budgetId',
     BudgetController.deleteById)
 
-
+router.use('/:budgetId/expenses', routerExpense)
 export default router

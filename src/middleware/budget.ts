@@ -46,7 +46,7 @@ export const validateBudgetExists = async (req: Request, res: Response, next: Ne
 export const validateBudgetInput = async (req: Request, res: Response, next: NextFunction) => {
 
     await body('name')
-            .notEmpty().withMessage('El campo nombre no puede ir vacio')
+            .notEmpty().withMessage('El nombre del presupuesto no puede ir vacio')
             .run(req),
     await body('amount')
             .notEmpty().withMessage('La cantidad del presupuesto no puede ir vacia')
