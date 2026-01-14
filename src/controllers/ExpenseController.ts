@@ -17,14 +17,16 @@ export class ExpensesController {
     }
 
     static getById = async (req: Request, res: Response) => {
-
+        res.json(req.expense)
     }
 
     static updateById = async (req: Request, res: Response) => {
-
+        req.expense.update(req.body)
+        res.json('Gasto ha sido actualizado con exito!')
     }
-
+    
     static deleteById = async (req: Request, res: Response) => {
-
+        req.expense.destroy()
+        res.json('Gasto ha sido eliminado con exito!')
     }
 }

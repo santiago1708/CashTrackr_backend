@@ -1,14 +1,19 @@
 import { Router } from 'express'
 import { ExpensesController } from '../controllers/ExpenseController'
-import { validateExpenseInput } from '../middleware/expense'
+import { validateBudgetExits, validateExpenseId, validateExpenseInput } from '../middleware/expense'
 
 const routerExpense = Router({mergeParams: true})
+
+routerExpense.param('expenseId', validateExpenseId)
+routerExpense.param('expenseId', validateBudgetExits)
 
 routerExpense.post('/', 
     validateExpenseInput,
     ExpensesController.create)
 routerExpense.get('/:expenseId', ExpensesController.getById)
-routerExpense.put('/:expenseId', ExpensesController.updateById)
+routerExpense.put('/:expenseId', 
+    validateExpenseInput,
+    ExpensesController.updateById)
 routerExpense.delete('/:expenseId', ExpensesController.deleteById)
 
 
