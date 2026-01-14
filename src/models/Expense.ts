@@ -1,4 +1,4 @@
-import { Model, Table, Column, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript'
+import { Model, Table, Column, DataType, BelongsTo, ForeignKey, AllowNull } from 'sequelize-typescript'
 import Budget from './Budget'
 
 
@@ -8,11 +8,13 @@ import Budget from './Budget'
 
 
 class Expense extends Model {
+    @AllowNull(false)
     @Column({
         type : DataType.STRING(100)
     })
     declare name: string
 
+    @AllowNull(false)
     @Column ({
         type: DataType.DECIMAL
     })
