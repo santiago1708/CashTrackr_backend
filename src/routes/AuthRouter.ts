@@ -2,8 +2,10 @@ import { Router } from 'express'
 import { body } from 'express-validator'
 import { AuthController } from '../controllers/AuthController'
 import { handleInputErrors } from '../middleware/validation'
+import { Limiter } from '../config/limiter'
 
 const routerAuth = Router()
+
 
 routerAuth.post('/create-account',
     body('name')
@@ -18,6 +20,7 @@ routerAuth.post('/create-account',
     AuthController.createAccount)
 
 routerAuth.post('/confirm-account',
+    Limiter,
     body('token')
         .notEmpty()
         .isInt()
