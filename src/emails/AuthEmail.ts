@@ -22,6 +22,6 @@ export class AuthEmail {
             `
         })
 
-        console.log(email)
+        console.log('Mensaje enviado: ', email.messageId)
     }
 }
