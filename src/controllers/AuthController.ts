@@ -43,9 +43,9 @@ export class AuthController {
         try {
             const isTokenValid = await User.findOne({ where: { token } })
 
-            if(!isTokenValid) {
+            if (!isTokenValid) {
                 const error = new Error('Token no valido')
-                res.status(401).json({ error: error.message})
+                res.status(401).json({ error: error.message })
                 return
             }
 
@@ -54,6 +54,27 @@ export class AuthController {
             await isTokenValid.save()
 
             res.json('Cuenta confirmada conrrectamente!')
+        } catch (e) {
+            const error = new Error('Hubo un error')
+            res.status(500).json({ error: error.message })
+            return
+        }
+    }
+
+    static login = async (req: Request, res: Response) => {
+        const { email, password } = req.body
+        try {
+            const user = await User.findOne({ where: { email } })
+
+            if(!user) {
+                const error = new Error('El usuario no existe')
+                res.status(404).json({ error: error.message})
+                return
+            }
+
+            res.json('inicio de sesion bien')
+
+
         } catch (e) {
             const error = new Error('Hubo un error')
             res.status(500).json({ error: error.message })

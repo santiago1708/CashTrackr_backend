@@ -24,10 +24,19 @@ routerAuth.post('/confirm-account',
     body('token')
         .notEmpty()
         .isInt()
-        .isLength({min: 6, max: 6}).withMessage('Token no válido'),
+        .isLength({ min: 6, max: 6 }).withMessage('Token no válido'),
     handleInputErrors,
     AuthController.confirmAccount)
 
+routerAuth.post('/login',
+    body('email')
+        .isEmail().withMessage('El email no es valido')
+        .notEmpty().withMessage('El correo electronico es obligatorio'),
+    body('password')
+        .notEmpty().withMessage('La contraseña es obligatoria')
+        .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
+    handleInputErrors,
+    AuthController.login)
 
 
 export default routerAuth
