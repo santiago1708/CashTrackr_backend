@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { body } from 'express-validator'
+import { body, param } from 'express-validator'
 import { AuthController } from '../controllers/AuthController'
 import { handleInputErrors } from '../middleware/validation'
 import { Limiter } from '../config/limiter'
@@ -54,7 +54,21 @@ routerAuth.post('/validate-token',
     handleInputErrors,
     AuthController.validateToken)
 
-//routerAuth.post('/reset-password/:token')
+routerAuth.post('/reset-password/:token', 
+    body('password') 
+        .notEmpty().withMessage('La contraseña actual es obligatoria'),
+    body('newPassword') 
+        .notEmpty().withMessage('La contraseña nueva es obligatoria')
+        .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
+    body('samePassword')
+        .notEmpty().withMessage('La confirmación de la contraseña es obligatoria')
+        .custom(value => value !== 'newPassword').withMessage('Las contraseñas no coinciden'),
+    param('token')
+        .isInt()
+        .isLength({ min: 6, max: 6 }).withMessage('Token no válido'),
+    handleInputErrors,
+    AuthController.resetPassword
+)
 
 
 export default routerAuth

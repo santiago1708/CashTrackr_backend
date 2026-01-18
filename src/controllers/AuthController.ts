@@ -151,4 +151,32 @@ export class AuthController {
             return
         }
     }
+
+    static resetPassword = async (req: Request, res: Response) => {
+        const { password, newPassword } = req.body
+        const { token } = req.params
+
+        try {
+            const user = await User.findOne({ where: { token } })
+
+            const passwordCorrect = await comparePassword(password, user.password)
+
+            if (!passwordCorrect) {
+                const error = new Error('La contraseña actual es incorrecta')
+                res.status(401).json({ error: error.message })
+                return
+            }
+
+            user.password = await hashPassword(newPassword)
+            user.token = ''
+            await user.save()
+
+            res.json('Contraseña actualizada con exito!')
+
+        } catch (e) {
+            const error = new Error('Hubo un error')
+            res.status(500).json({ error: error.message })
+            return
+        }
+    }
 }
