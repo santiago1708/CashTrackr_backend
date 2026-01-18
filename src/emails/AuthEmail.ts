@@ -1,4 +1,4 @@
-import {} from 'nodemailer'
+import { } from 'nodemailer'
 import { transport } from '../config/nodemailer'
 
 type EmailType = {
@@ -8,7 +8,7 @@ type EmailType = {
 }
 
 export class AuthEmail {
-    static sendConfirmationEmail = async (user : EmailType) => {
+    static sendConfirmationEmail = async (user: EmailType) => {
         const email = await transport.sendMail({
             from: 'CashTrackr <admin@gmail.com',
             to: user.email,
@@ -23,5 +23,20 @@ export class AuthEmail {
         })
 
         console.log('Mensaje enviado: ', email.messageId)
+    }
+
+    static sendResetPassword = async (user: EmailType) => {
+        const email = await transport.sendMail({
+            from: 'CashTrackr <admin@gmail.com',
+            to: user.email,
+            subject: 'CashTrackr - Reestablece tu contraseña',
+            html: `
+                <p>Hola ${user.name}, Has solicitad reestablecer tu password</p>
+                <p>Visita el siguiente enlace:</p>
+                <a href="#">Reestablece tu contraseña</a>
+                <p>e Ingresa el codigo: <b>${user.token}</b></p>
+                <p>Si no solicitaste reestablecer tu contraseña, puedes ignorar este mensaje</p>
+            `
+        })
     }
 }
