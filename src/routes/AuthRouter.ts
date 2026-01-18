@@ -5,6 +5,7 @@ import { handleInputErrors } from '../middleware/validation'
 import { Limiter } from '../config/limiter'
 
 const routerAuth = Router()
+routerAuth.use(Limiter)
 
 
 routerAuth.post('/create-account',
@@ -20,7 +21,6 @@ routerAuth.post('/create-account',
     AuthController.createAccount)
 
 routerAuth.post('/confirm-account',
-    Limiter,
     body('token')
         .notEmpty()
         .isInt()

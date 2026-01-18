@@ -1,8 +1,10 @@
+import { comparePassword } from './../utils/auth';
 import type { Request, Response } from 'express'
 import User from '../models/User'
 import { hashPassword } from '../utils/auth'
-import { generateToken } from '../utils/token'
 import { AuthEmail } from '../emails/AuthEmail'
+import { generateJWT } from '../utils/jwt';
+import { generateToken } from '../utils/token';
 
 export class AuthController {
     static createAccount = async (req: Request, res: Response) => {
@@ -66,14 +68,31 @@ export class AuthController {
         try {
             const user = await User.findOne({ where: { email } })
 
-            if(!user) {
+            // Verificar si el usuario existe
+            if (!user) {
                 const error = new Error('El usuario no existe')
-                res.status(404).json({ error: error.message})
+                res.status(404).json({ error: error.message })
                 return
             }
 
-            res.json('inicio de sesion bien')
+            // Verificar si el usuario esta confirmado
+            if (!user.confirmed) {
+                const error = new Error('Tu cuenta no ha sido confimada')
+                res.status(403).json({ error: error.message })
+                return
+            }
 
+            const isPasswordCorrect = await comparePassword(password, user.password)
+
+            // Verificar si la contraseña es incorrecta
+            if (!isPasswordCorrect) {
+                const error = new Error('Los datos son incorrectos')
+                res.status(401).json({ error: error.message })
+                return
+            }
+
+            const token = generateJWT(user.id)
+            res.json(token)
 
         } catch (e) {
             const error = new Error('Hubo un error')
