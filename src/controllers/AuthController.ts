@@ -159,6 +159,12 @@ export class AuthController {
         try {
             const user = await User.findOne({ where: { token } })
 
+            if (!user) {
+                const error = new Error('Token no valido')
+                res.status(404).json({ error: error.message })
+                return
+            }
+
             const passwordCorrect = await comparePassword(password, user.password)
 
             if (!passwordCorrect) {

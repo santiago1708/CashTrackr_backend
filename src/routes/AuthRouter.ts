@@ -54,18 +54,18 @@ routerAuth.post('/validate-token',
     handleInputErrors,
     AuthController.validateToken)
 
-routerAuth.post('/reset-password/:token', 
-    body('password') 
+routerAuth.post('/reset-password/:token',
+    param('token')
+        .isInt()
+        .isLength({ min: 6, max: 6 }).withMessage('Token no válido'),
+    body('password')
         .notEmpty().withMessage('La contraseña actual es obligatoria'),
-    body('newPassword') 
+    body('newPassword')
         .notEmpty().withMessage('La contraseña nueva es obligatoria')
         .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
     body('samePassword')
         .notEmpty().withMessage('La confirmación de la contraseña es obligatoria')
         .custom(value => value !== 'newPassword').withMessage('Las contraseñas no coinciden'),
-    param('token')
-        .isInt()
-        .isLength({ min: 6, max: 6 }).withMessage('Token no válido'),
     handleInputErrors,
     AuthController.resetPassword
 )
