@@ -69,6 +69,7 @@ routerAuth.post('/reset-password/:token',
     handleInputErrors,
     AuthController.resetPassword
 )
+routerAuth.get('/user' , AuthController.user)
 
 
 export default routerAuth
