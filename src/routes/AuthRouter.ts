@@ -3,6 +3,7 @@ import { body, param } from 'express-validator'
 import { AuthController } from '../controllers/AuthController'
 import { handleInputErrors } from '../middleware/validation'
 import { Limiter } from '../config/limiter'
+import { authenticateJWT } from '../middleware/auth'
 
 const routerAuth = Router()
 routerAuth.use(Limiter)
@@ -69,7 +70,9 @@ routerAuth.post('/reset-password/:token',
     handleInputErrors,
     AuthController.resetPassword
 )
-routerAuth.get('/user' , AuthController.user)
+routerAuth.get('/user' , 
+    authenticateJWT,
+    AuthController.user)
 
 
 export default routerAuth
