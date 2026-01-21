@@ -153,8 +153,8 @@ export class AuthController {
     }
 
     static resetPassword = async (req: Request, res: Response) => {
-        const { password, newPassword } = req.body
-        const { token } = req.params
+        const { password } = req.body
+        const { token } = req.headers
 
         try {
             const user = await User.findOne({ where: { token } })
@@ -165,15 +165,7 @@ export class AuthController {
                 return
             }
 
-            const passwordCorrect = await comparePassword(password, user.password)
-
-            if (!passwordCorrect) {
-                const error = new Error('La contraseña actual es incorrecta')
-                res.status(401).json({ error: error.message })
-                return
-            }
-
-            user.password = await hashPassword(newPassword)
+            user.password = await hashPassword(password)
             user.token = ''
             await user.save()
 
@@ -189,4 +181,30 @@ export class AuthController {
     static user = async (req: Request, res: Response) => {
         res.json(req.user)
     }
+
+    static updatePassword = async (req: Request, res: Response) => { 
+        const { password, newPassword } = req.body
+
+        try {
+            const user = await User.findByPk(req.user.id, {
+                attributes: ['id', 'password']
+            })
+            const passwordCorrect = await comparePassword(password, user.password)
+
+            if (!passwordCorrect) {
+                const error = new Error('La contraseña actual es incorrecta')
+                res.status(401).json({ error: error.message })
+                return
+            }
+            
+            user.password = await hashPassword(newPassword)
+            await user.save()
+
+            res.json('Contraseña actualizada con exito!')
+        } catch (e) {
+            const error = new Error('Hubo un error')
+            res.status(500).json({ error: error.message })
+            return
+        }
+    }   
 }

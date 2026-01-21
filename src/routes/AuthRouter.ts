@@ -39,7 +39,6 @@ routerAuth.post('/login',
     handleInputErrors,
     AuthController.login)
 
-
 routerAuth.post('/forgot-password',
     body('email')
         .isEmail().withMessage('El email no es valido')
@@ -61,18 +60,25 @@ routerAuth.post('/reset-password/:token',
         .isLength({ min: 6, max: 6 }).withMessage('Token no válido'),
     body('password')
         .notEmpty().withMessage('La contraseña actual es obligatoria'),
+    handleInputErrors,
+    AuthController.resetPassword
+)
+routerAuth.get('/user',
+    authenticateJWT,
+    AuthController.user)
+
+routerAuth.post('/update-password',
+    authenticateJWT,
+    body('password')
+        .notEmpty().withMessage('La contraseña actual es obligatoria'),
     body('newPassword')
         .notEmpty().withMessage('La contraseña nueva es obligatoria')
         .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
     body('samePassword')
         .notEmpty().withMessage('La confirmación de la contraseña es obligatoria')
-        .custom(value => value !== 'newPassword').withMessage('Las contraseñas no coinciden'),
+        .custom((value, { req }) => value === req.body.newPassword).withMessage('Las contraseñas no coinciden'),
     handleInputErrors,
-    AuthController.resetPassword
+    AuthController.updatePassword
 )
-routerAuth.get('/user' , 
-    authenticateJWT,
-    AuthController.user)
-
 
 export default routerAuth
