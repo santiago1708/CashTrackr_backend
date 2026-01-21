@@ -78,7 +78,7 @@ routerAuth.post('/update-password',
         .notEmpty().withMessage('La confirmación de la contraseña es obligatoria')
         .custom((value, { req }) => value === req.body.newPassword).withMessage('Las contraseñas no coinciden'),
     handleInputErrors,
-    AuthController.updatePassword
+    AuthController.updateCurrentUserPassword
 )
 
 export default routerAuth

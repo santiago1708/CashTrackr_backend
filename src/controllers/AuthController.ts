@@ -182,12 +182,12 @@ export class AuthController {
         res.json(req.user)
     }
 
-    static updatePassword = async (req: Request, res: Response) => { 
+    static updateCurrentUserPassword = async (req: Request, res: Response) => { 
         const { password, newPassword } = req.body
 
         try {
             const user = await User.findByPk(req.user.id, {
-                attributes: ['id', 'password']
+                attributes: ['password']
             })
             const passwordCorrect = await comparePassword(password, user.password)
 
