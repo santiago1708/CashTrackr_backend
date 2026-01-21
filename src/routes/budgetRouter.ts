@@ -2,13 +2,17 @@ import { Router } from 'express'
 import { body, param } from 'express-validator'
 import { BudgetController } from '../controllers/BudgetController'
 import { handleInputErrors } from '../middleware/validation'
-import { validateBudgetExists, validateBudgetId, validateBudgetInput } from '../middleware/budget'
+import { hasAcces, validateBudgetExists, validateBudgetId, validateBudgetInput } from '../middleware/budget'
 import routerExpense from './expenseRouter'
+import { authenticateJWT } from '../middleware/auth'
 
 const router = Router()
 
+router.use(authenticateJWT) //req.User
 router.param('budgetId', validateBudgetId)
-router.param('budgetId', validateBudgetExists)
+router.param('budgetId', validateBudgetExists) //res.budget
+router.param('budgetId', hasAcces)
+
 
 router.get('/', BudgetController.getAll)
 
