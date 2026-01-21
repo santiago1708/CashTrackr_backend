@@ -81,4 +81,12 @@ routerAuth.post('/update-password',
     AuthController.updateCurrentUserPassword
 )
 
+routerAuth.post('/check-password' ,
+    authenticateJWT,
+    body('password')
+        .notEmpty().withMessage('La contraseña es obligatoria'),
+    handleInputErrors,
+    AuthController.checkPassword
+)
+
 export default routerAuth

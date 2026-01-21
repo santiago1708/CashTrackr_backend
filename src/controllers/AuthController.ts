@@ -182,7 +182,7 @@ export class AuthController {
         res.json(req.user)
     }
 
-    static updateCurrentUserPassword = async (req: Request, res: Response) => { 
+    static updateCurrentUserPassword = async (req: Request, res: Response) => {
         const { password, newPassword } = req.body
 
         try {
@@ -196,7 +196,7 @@ export class AuthController {
                 res.status(401).json({ error: error.message })
                 return
             }
-            
+
             user.password = await hashPassword(newPassword)
             await user.save()
 
@@ -206,5 +206,30 @@ export class AuthController {
             res.status(500).json({ error: error.message })
             return
         }
-    }   
+    }
+
+    static checkPassword = async (req: Request, res: Response) => {
+
+        const { password } = req.body
+        const { id } = req.user
+
+        try {
+            const user = await User.findByPk(id, {
+                attributes: ['password']
+            })
+
+            const isPasswordCorrect = await comparePassword(password, user.password)
+            if (!isPasswordCorrect) {
+                const error = new Error('La contraseña actual es incorrecta')
+                res.status(401).json({ error: error.message })
+                return
+            }
+            res.json('Contraseña correcta!')
+
+        } catch (e) {
+            const error = new Error('Hubo un error')
+            res.status(500).json({ error: error.message })
+            return
+        }
+    }
 }
