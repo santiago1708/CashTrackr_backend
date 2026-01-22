@@ -3,7 +3,8 @@ import { budgets } from '../mocks/budgets'
 import { BudgetController } from '../../controllers/BudgetController'
 import Budget from '../../models/Budget'
 jest.mock('../../models/Budget', () => ({
-    findAll: jest.fn()
+    findAll: jest.fn(),
+    create: jest.fn()
 }))
 
 describe('BudgetController.getAll', () => {
@@ -70,6 +71,52 @@ describe('BudgetController.getAll', () => {
 
         expect(res.statusCode).toBe(500)
         expect(res._getJSONData()).toStrictEqual({ error: 'Ocurrio un error' })
+    })
+
+})
+
+describe('BudgetController.create', () => {
+    it('Should create a new Budget and respond with statusCode 201', async () => {
+        const mockBudget = {
+            save: jest.fn().mockResolvedValue(true) // Simular la fucnion save()
+        };
+        (Budget.create as jest.Mock).mockResolvedValue(mockBudget) //Resuelva el metodo save
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/budgets',
+            user: { id: 1 },
+            body: {name: 'Presupuesto prueba', amout: 1000}
+        })
+        const res = createResponse()
+        await BudgetController.create(req, res)
+
+        const data = res._getJSONData()
+        expect(res.statusCode).toBe(201)
+        expect(data).toBe('Presupuesto creado correctamente!')
+        expect(mockBudget.save).toHaveBeenCalled() //Se asegura que se mando a llamar
+        expect(mockBudget.save).toHaveBeenCalledTimes(1) //Se asegura que se mando a llamar solo una vez
+        expect(Budget.create).toHaveBeenCalledWith(req.body) // Create se manda a llamar si hay un req.body?
+    })
+    
+    it('should handle budget creation error', async () => {
+        const mockBudget = {
+            save: jest.fn() // Simular la fucnion save() pero no la manda a llamar
+        };
+        (Budget.create as jest.Mock).mockRejectedValue(new Error) //Obliga a ocurrir un error
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/budgets',
+            user: { id: 100 },
+            body: {name: 'Presupuesto prueba', amout: "1000"}
+        })
+        const res = createResponse()
+        await BudgetController.create(req, res)
+
+        const data = res._getJSONData()
+        expect(res.statusCode).toBe(500)
+        expect(data).toStrictEqual({ error: 'Ocurrio un error' })
+        expect(mockBudget.save).not.toHaveBeenCalled()
+        expect(Budget.create).toHaveBeenCalledWith(req.body)
     })
 
 })
