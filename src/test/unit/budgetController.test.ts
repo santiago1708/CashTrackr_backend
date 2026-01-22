@@ -2,9 +2,12 @@ import { createRequest, createResponse } from 'node-mocks-http'
 import { budgets } from '../mocks/budgets'
 import { BudgetController } from '../../controllers/BudgetController'
 import Budget from '../../models/Budget'
+import Expense from '../../models/Expense'
 jest.mock('../../models/Budget', () => ({
     findAll: jest.fn(),
-    create: jest.fn()
+    create: jest.fn(),
+    findByPk: jest.fn(),
+    update: jest.fn()
 }))
 
 describe('BudgetController.getAll', () => {
@@ -85,7 +88,7 @@ describe('BudgetController.create', () => {
             method: 'POST',
             url: '/api/budgets',
             user: { id: 1 },
-            body: {name: 'Presupuesto prueba', amout: 1000}
+            body: { name: 'Presupuesto prueba', amout: 1000 }
         })
         const res = createResponse()
         await BudgetController.create(req, res)
@@ -97,7 +100,7 @@ describe('BudgetController.create', () => {
         expect(mockBudget.save).toHaveBeenCalledTimes(1) //Se asegura que se mando a llamar solo una vez
         expect(Budget.create).toHaveBeenCalledWith(req.body) // Create se manda a llamar si hay un req.body?
     })
-    
+
     it('should handle budget creation error', async () => {
         const mockBudget = {
             save: jest.fn() // Simular la fucnion save() pero no la manda a llamar
@@ -107,7 +110,7 @@ describe('BudgetController.create', () => {
             method: 'POST',
             url: '/api/budgets',
             user: { id: 100 },
-            body: {name: 'Presupuesto prueba', amout: "1000"}
+            body: { name: 'Presupuesto prueba', amout: "1000" }
         })
         const res = createResponse()
         await BudgetController.create(req, res)
@@ -120,3 +123,67 @@ describe('BudgetController.create', () => {
     })
 
 })
+
+describe('BudgetController.getById', () => {
+
+    beforeEach(() => {
+        (Budget.findByPk as jest.Mock).mockImplementation((id) => {
+            const updatedBudgets = budgets.filter(budget => budget.id === id)[0] //El filter te retorna un arreglo, para mostrar un objeto nos colocamos en la posicion 0
+            return Promise.resolve(updatedBudgets)
+        })
+    })
+
+    it('Should return a budget with Id 1 and 3 expenses', async () => {
+        const req = createRequest({
+            method: 'GET',
+            url: '/api/budgets/:id',
+            budget: { id: 1 }
+        })
+        const res = createResponse()
+        await BudgetController.getById(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(200)
+        expect(data.expenses).toHaveLength(3) //Tiene 3 expenses
+        expect(Budget.findByPk).toHaveBeenCalledTimes(1)
+        expect(Budget.findByPk).toHaveBeenCalledWith(req.budget.id, {
+            include: [Expense],
+        })
+
+    })
+    it('Should return a budget with Id 2 and 2 expenses', async () => {
+        const req = createRequest({
+            method: 'GET',
+            url: '/api/budgets/:id',
+            budget: { id: 2 }
+        })
+        const res = createResponse()
+        await BudgetController.getById(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(200)
+        expect(data.expenses).toHaveLength(2) //Tiene 3 expenses
+        expect(Budget.findByPk).toHaveBeenCalledTimes(1)
+        expect(Budget.findByPk).toHaveBeenCalledWith(req.budget.id, {
+            include: [Expense],
+        })
+    })
+    it('Should return a budget with Id 3 and 0 expenses', async () => {
+        const req = createRequest({
+            method: 'GET',
+            url: '/api/budgets/:id',
+            budget: { id: 3 }
+        })
+        const res = createResponse()
+        await BudgetController.getById(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(200)
+        expect(data.expenses).toHaveLength(0) //Tiene 3 expenses
+        expect(Budget.findByPk).toHaveBeenCalledTimes(1)
+        expect(Budget.findByPk).toHaveBeenCalledWith(req.budget.id, {
+            include: [Expense],
+        })
+    })
+})
+
