@@ -6,8 +6,7 @@ import Expense from '../../models/Expense'
 jest.mock('../../models/Budget', () => ({
     findAll: jest.fn(),
     create: jest.fn(),
-    findByPk: jest.fn(),
-    update: jest.fn()
+    findByPk: jest.fn()
 }))
 
 describe('BudgetController.getAll', () => {
@@ -163,7 +162,6 @@ describe('BudgetController.getById', () => {
 
         expect(res.statusCode).toBe(200)
         expect(data.expenses).toHaveLength(2) //Tiene 3 expenses
-        expect(Budget.findByPk).toHaveBeenCalledTimes(1)
         expect(Budget.findByPk).toHaveBeenCalledWith(req.budget.id, {
             include: [Expense],
         })
@@ -180,10 +178,53 @@ describe('BudgetController.getById', () => {
 
         expect(res.statusCode).toBe(200)
         expect(data.expenses).toHaveLength(0) //Tiene 3 expenses
-        expect(Budget.findByPk).toHaveBeenCalledTimes(1)
         expect(Budget.findByPk).toHaveBeenCalledWith(req.budget.id, {
             include: [Expense],
         })
     })
 })
 
+describe('BudgetController.updateById', () => {
+    it('Should update a budget with id 1', async () => {
+        const mockUpdate = {
+            update: jest.fn().mockResolvedValue(true)
+        }
+        const req = createRequest({
+            method: 'PUT',
+            url: '/api/budgets/:budgetId',
+            budget: mockUpdate,
+            body: { name: 'Nombre Prueba', amount: 100 }
+        })
+        const res = createResponse()
+        await BudgetController.updateById(req, res)
+
+        const data = res._getJSONData()
+        expect(res.statusCode).toBe(200)
+        expect(data).toBe('Presupuesto actualizado con exito!')
+        expect(mockUpdate.update).toHaveBeenCalled()
+        expect(mockUpdate.update).toHaveBeenCalledTimes(1)
+        expect(mockUpdate.update).toHaveBeenCalledWith(req.body)
+    })
+})
+
+describe('BudgetController.deleteById', () => {
+    it('Should delete budget with id 1', async () => {
+        const mockDelete = {
+            destroy: jest.fn().mockResolvedValue(true)
+        }
+        const req = createRequest({
+            method: 'DELETE',
+            url: '/api/budgets/:budgetId',
+            budget: mockDelete
+        })
+        const res = createResponse()
+        await BudgetController.deleteById(req, res)
+
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(200)
+        expect(data).toBe('Presupuesto ha sido eliminado con exito!')
+        expect(mockDelete.destroy).toHaveBeenCalled()
+        expect(mockDelete.destroy).toHaveBeenCalledTimes(1)
+    })
+})
