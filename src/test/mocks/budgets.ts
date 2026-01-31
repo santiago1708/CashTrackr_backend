@@ -3,7 +3,7 @@ export const budgets = [
         "id": 1,
         "name": "Graduación",
         "amount": 1000,
-        "userId": 1,
+        "UserId": 1,
         "createdAt": "2030-06-12T20:43:48.877Z",
         "updatedAt": "2030-06-12T20:43:48.877Z",
         "expenses": [
@@ -37,7 +37,7 @@ export const budgets = [
         "id": 2,
         "name": "Gastos Semana",
         "amount": 400,
-        "userId": 1,
+        "UserId": 1,
         "createdAt": "2030-06-12T20:43:48.877Z",
         "updatedAt": "2030-06-12T20:43:48.877Z",
         "expenses": [
@@ -63,7 +63,7 @@ export const budgets = [
         "id": 3,
         "name": "Gastos ",
         "amount": 400,
-        "userId": 2,
+        "UserId": 2,
         "createdAt": "2030-06-12T20:43:48.877Z",
         "updatedAt": "2030-06-12T20:43:48.877Z",
         "expenses": []

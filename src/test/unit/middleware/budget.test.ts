@@ -1,5 +1,5 @@
 import { createRequest, createResponse } from 'node-mocks-http'
-import { validateBudgetExists } from '../../../middleware/budget'
+import { hasAcces, validateBudgetExists } from '../../../middleware/budget'
 import Budget from '../../../models/Budget'
 import { budgets } from '../../mocks/budgets'
 
@@ -55,5 +55,34 @@ describe('Budget - validateBudgetExists', () => {
         expect(res.statusCode).toBe(500)
         expect(data).toEqual({ error: 'Ocurrio un error' })
         expect(next).not.toHaveBeenCalled()
+    })
+})
+
+describe('Budget - hasAcces', () => {
+    it('Should call next() if user has acces to budget', () => {
+        const req = createRequest({
+            budget: budgets[0],
+            user: { id: 1 },
+        })
+        const res = createResponse()
+        const next = jest.fn()
+
+        hasAcces(req, res, next)
+        expect(next).toHaveBeenCalled()
+        expect(next).toHaveBeenCalledTimes(1)
+    })
+    it('Should create error if user has not acces to budget', () => {
+        const req = createRequest({
+            budget: budgets[0],
+            user: { id: 2 },
+        })
+        const res = createResponse()
+        const next = jest.fn()
+
+        hasAcces(req, res, next)
+
+        expect(res.statusCode).toBe(401)
+        expect(next).not.toHaveBeenCalled()
+        expect(next).not.toHaveBeenCalledTimes(1)
     })
 })

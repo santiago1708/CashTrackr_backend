@@ -14,7 +14,7 @@ describe('BudgetController.getAll', () => {
     beforeEach(() => { // BeforeEach se ejecuta antes de cada it y se repite la cantidad de it que hayan
         (Budget.findAll as jest.Mock).mockReset();
         (Budget.findAll as jest.Mock).mockImplementation((options) => {
-            const updatedBudgets = budgets.filter(budget => budget.userId === options.where.UserId)
+            const updatedBudgets = budgets.filter(budget => budget.UserId === options.where.UserId)
             return Promise.resolve(updatedBudgets)
         })
     })
