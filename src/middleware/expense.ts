@@ -15,7 +15,7 @@ export const validateExpenseInput = async (req: Request, res: Response, next: Ne
     await body('name')
         .notEmpty().withMessage('El nombre del gasto no puede ir vacio')
         .run(req),
-    await body('amount')
+        await body('amount')
             .notEmpty().withMessage('La cantidad del gasto no puede ir vacia')
             .isNumeric().withMessage('Cantidad no valida')
             .custom(value => value > 0).withMessage('El gasto debe ser mayor a 0')
@@ -33,7 +33,7 @@ export const validateExpenseExits = async (req: Request, res: Response, next: Ne
         const { expenseId, budgetId } = req.params
         const expense = await Expense.findByPk(expenseId)
 
-        if (expense.budgetId !== parseInt(budgetId)) {
+        if (!expense || expense.budgetId !== parseInt(budgetId)) {
             const error = new Error('Gasto no encontrado')
             res.status(404).json({ error: error.message })
             return
