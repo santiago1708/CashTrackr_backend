@@ -79,7 +79,7 @@ describe('ExpensesController - updateById', () => {
             method: 'PUT',
             url: '/api/budgets/:budgetId/expenses/:expenseId',
             expense: mockExpense,
-            body: {name : 'Testing update', amount : 100}
+            body: { name: 'Testing update', amount: 100 }
         })
         const res = createResponse();
         await ExpensesController.updateById(req, res)
@@ -89,5 +89,26 @@ describe('ExpensesController - updateById', () => {
         expect(data).toEqual('Gasto ha sido actualizado con exito!')
         expect(mockExpense.update).toHaveBeenCalled()
         expect(mockExpense.update).toHaveBeenCalledWith(req.body)
+    })
+})
+
+describe('ExpensesController - deleteById', () => {
+    it('Should delete a expense by id', async () => {
+        const mockExpense = {
+            destroy : jest.fn().mockResolvedValue(true)
+        }
+        const req = createRequest({
+            method: 'DELETE',
+            url: '/api/budgets/:budgetId/expenses/:expenseId',
+            expense: mockExpense
+        })
+        const res = createResponse();
+        await ExpensesController.deleteById(req, res)
+
+        const data = res._getJSONData()
+        expect(res.statusCode).toBe(200)
+        expect(data).toEqual('Gasto ha sido eliminado con exito!')
+        expect(mockExpense.destroy).toHaveBeenCalled()
+        expect(mockExpense.destroy).toHaveBeenCalledTimes(1)
     })
 })
