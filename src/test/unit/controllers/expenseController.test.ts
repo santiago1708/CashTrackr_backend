@@ -1,4 +1,5 @@
-import { createRequest, createResponse} from 'node-mocks-http'
+import { createRequest, createResponse } from 'node-mocks-http'
+import { expenses } from './../../mocks/expenses';
 import Expense from '../../../models/Expense'
 import { ExpensesController } from '../../../controllers/ExpenseController'
 
@@ -6,7 +7,7 @@ jest.mock('../../../models/Expense', () => ({
     create: jest.fn()
 }))
 
-describe('ExpensesController - create' , () => {
+describe('ExpensesController - create', () => {
     it('Should create a new Expense in an budget', async () => {
         const mockSave = {
             save: jest.fn().mockResolvedValue(true)
@@ -14,9 +15,9 @@ describe('ExpensesController - create' , () => {
         (Expense.create as jest.Mock).mockResolvedValue(mockSave)
         const req = createRequest({
             method: 'POST',
-            utl: '/api/budgets/:budgetId/expenses', 
+            utl: '/api/budgets/:budgetId/expenses',
             budget: { id: 1 },
-            body: {name: 'Body test', amount: 300}
+            body: { name: 'Body test', amount: 300 }
         })
         const res = createResponse();
         await ExpensesController.create(req, res)
@@ -37,9 +38,9 @@ describe('ExpensesController - create' , () => {
         (Expense.create as jest.Mock).mockResolvedValue(new Error)
         const req = createRequest({
             method: 'POST',
-            utl: '/api/budgets/:budgetId/expenses', 
+            utl: '/api/budgets/:budgetId/expenses',
             budget: { id: 1 },
-            body: {name: 'Body test', amount: 300}
+            body: { name: 'Body test', amount: 300 }
         })
         const res = createResponse();
         await ExpensesController.create(req, res)
@@ -47,8 +48,24 @@ describe('ExpensesController - create' , () => {
         const data = res._getJSONData()
 
         expect(res.statusCode).toBe(500)
-        expect(data).toEqual({error: 'Hubo un error'})
+        expect(data).toEqual({ error: 'Hubo un error' })
         expect(mockSave.save).not.toHaveBeenCalled()
         expect(Expense.create).toHaveBeenCalledWith(req.body)
+    })
+})
+
+describe('ExpensesController - getById', () => {
+    it('Should get an expense by id', async () => {
+        const req = createRequest({
+            method: 'GET',
+            url: '/api/budgets/:budgetId/expenses/:expenseId',
+            expense: expenses[0]
+        })
+        const res = createResponse();
+        await ExpensesController.getById(req, res)
+
+        const data = res._getJSONData()
+        expect(res.statusCode).toBe(200)
+        expect(data).toEqual(expenses[0])
     })
 })
