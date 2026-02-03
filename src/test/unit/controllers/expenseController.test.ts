@@ -27,5 +27,28 @@ describe('ExpensesController - create' , () => {
         expect(data).toBe('Gasto agregado correctamente!')
         expect(mockSave.save).toHaveBeenCalled()
         expect(mockSave.save).toHaveBeenCalledTimes(1)
+        expect(Expense.create).toHaveBeenCalledWith(req.body)
+    })
+
+    it('Should handle expense creation error', async () => {
+        const mockSave = {
+            save: jest.fn()
+        };
+        (Expense.create as jest.Mock).mockResolvedValue(new Error)
+        const req = createRequest({
+            method: 'POST',
+            utl: '/api/budgets/:budgetId/expenses', 
+            budget: { id: 1 },
+            body: {name: 'Body test', amount: 300}
+        })
+        const res = createResponse();
+        await ExpensesController.create(req, res)
+
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(500)
+        expect(data).toEqual({error: 'Hubo un error'})
+        expect(mockSave.save).not.toHaveBeenCalled()
+        expect(Expense.create).toHaveBeenCalledWith(req.body)
     })
 })
