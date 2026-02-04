@@ -8,8 +8,15 @@ jest.mock('../../../models/Expense', () => ({
 }))
 
 describe('Expense - ValidateExpenseExits', () => {
+
+    beforeEach( () => {
+        (Expense.findByPk as jest.Mock).mockImplementation((expenseId) => {
+            const expense = expenses.filter( e => e.id === expenseId)[0] ?? null
+            return Promise.resolve(expense)
+        })
+    })
+
     it('Should proced a next middleware if expense exist', async () => {
-        (Expense.findByPk as jest.Mock).mockResolvedValue(expenses[0])
         const req = createRequest({
             params: { expenseId: 1, budgetId: 1 }
         })
@@ -20,12 +27,12 @@ describe('Expense - ValidateExpenseExits', () => {
         expect(res.statusCode).toBe(200)
         expect(next).toHaveBeenCalled()
         expect(next).toHaveBeenCalledTimes(1)
+        expect(req.expense).toEqual(expenses[0])
     })
 
     it('Should handle no exist expense', async () => {
-        (Expense.findByPk as jest.Mock).mockResolvedValue(null) //error logico
         const req = createRequest({
-            params: { expenseId: 1, budgetId: 1 }
+            params: { expenseId: 10, budgetId: 1 }
         })
         const res = createResponse()
         const next = jest.fn()
@@ -37,4 +44,18 @@ describe('Expense - ValidateExpenseExits', () => {
         expect(next).not.toHaveBeenCalled()
     })
 
+    it('Should handle no exist expense', async () => {
+        (Expense.findByPk as jest.Mock).mockRejectedValue(new Error)
+        const req = createRequest({
+            params: { expenseId: 1, budgetId: 1 }
+        })
+        const res = createResponse()
+        const next = jest.fn()
+        await validateExpenseExits(req, res, next)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(500)
+        expect(data).toEqual({error: 'Hubo un error'})
+        expect(next).not.toHaveBeenCalled()
+    })
 })
