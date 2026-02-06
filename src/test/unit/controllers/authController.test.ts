@@ -10,11 +10,10 @@ jest.mock('../../../models/User')
 jest.mock('../../../utils/auth')
 jest.mock('../../../utils/token')
 
+beforeEach(() => {
+    jest.resetAllMocks() //Importante si quieres que ningun otro mock herede en otra prueba
+})
 describe('AuthController - CreateAccount', () => {
-
-    beforeEach(() => {
-        jest.resetAllMocks() //Importante si quieres que ningun otro mock herede en otra prueba
-    })
 
     it('Should throw an error with status 409 when it finds a registered email', async () => {
         (User.findOne as jest.Mock).mockResolvedValue(true)
@@ -76,4 +75,29 @@ describe('AuthController - CreateAccount', () => {
             token: tok
         })
     })
+})
+
+describe('AuthController - confirmAccount', () => {
+    it('Should throw an error with status 401 when it token is not valid', async () => {
+        (User.findOne as jest.Mock).mockResolvedValue(false)
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/confirm-account',
+            body: {
+                token: '123456'
+            }
+        })
+        const res = createResponse();
+
+        await AuthController.confirmAccount(req, res)
+        const data = res._getJSONData()
+
+
+        expect(res.statusCode).toBe(401)
+        expect(data).toHaveProperty('error', 'Token no valido')
+        expect(User.findOne).toHaveBeenCalled()
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+    })
+
+
 })
