@@ -55,7 +55,7 @@ export class AuthController {
             isTokenValid.token = ''
             await isTokenValid.save()
 
-            res.json('Cuenta confirmada conrrectamente!')
+            res.json('Cuenta confirmada correctamente!')
         } catch (e) {
             const error = new Error('Hubo un error')
             res.status(500).json({ error: error.message })

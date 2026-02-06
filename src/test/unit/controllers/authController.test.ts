@@ -99,5 +99,34 @@ describe('AuthController - confirmAccount', () => {
         expect(User.findOne).toHaveBeenCalledTimes(1)
     })
 
+    it('Should return a message of account confirm', async () => {
+        const userMock = {
+            token: '123456',
+            confirmed: false,
+            save: jest.fn().mockResolvedValue(true)
+        };
+        (User.findOne as jest.Mock).mockResolvedValue(userMock)
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/confirm-account',
+            body: {
+                token: userMock.token
+            }
+        })
+        const res = createResponse();
 
+        await AuthController.confirmAccount(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(200)
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { token: req.body.token }
+        })
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+        expect(userMock.save).toHaveBeenCalled()
+        expect(userMock.save).toHaveBeenCalledTimes(1)
+        expect(userMock.confirmed).toBe(true)
+        expect(userMock.token).toBeFalsy()
+        expect(data).toEqual('Cuenta confirmada correctamente!')
+    })
 })
