@@ -18,7 +18,7 @@ export class AuthController {
                 return
             }
 
-            const user = new User(req.body)
+            const user = await User.create(req.body)
             user.password = await hashPassword(password)
             user.token = generateToken()
             await user.save()
@@ -31,7 +31,7 @@ export class AuthController {
                 }
             )
 
-            res.json('Usuario creado correctamente!')
+            res.status(201).json('Usuario creado correctamente!')
         } catch (e) {
             const error = new Error('Hubo un error')
             res.status(500).json({ error: error.message })
