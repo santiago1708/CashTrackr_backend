@@ -234,3 +234,31 @@ describe('AuthController - validateToken', () => {
         })
     })
 })
+
+describe('AuthController - resetPassword', () => {
+    it('Should throw an error with status 404 when it find a user not exist ', async () => {
+        (User.findOne as jest.Mock).mockResolvedValue(false)
+        const token = '123456'
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/reset-password/:token',
+            body: {
+                password: 'hashpassword'
+            },
+            headers: {
+                token
+            }
+        })
+        const res = createResponse();
+        await AuthController.resetPassword(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(404)
+        expect(data).toHaveProperty('error', 'Token no valido')
+        expect(User.findOne).toHaveBeenCalled()
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { token: req.headers.token }
+        })
+    })
+})
