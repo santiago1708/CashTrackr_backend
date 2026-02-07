@@ -196,20 +196,41 @@ describe('AuthController - validateToken', () => {
             method: 'POST',
             url: '/api/auth/validate-token',
             body: {
-                email: 'test@test.com'
+                token: '123456'
             }
         })
         const res = createResponse();
-        await AuthController.forgotPassword(req, res)
+        await AuthController.validateToken(req, res)
         const data = res._getJSONData()
 
         expect(res.statusCode).toBe(404)
-        expect(data).toHaveProperty('error', 'El usuario no existe')
+        expect(data).toHaveProperty('error', 'Token no valido')
         expect(User.findOne).toHaveBeenCalled()
         expect(User.findOne).toHaveBeenCalledTimes(1)
         expect(User.findOne).toHaveBeenCalledWith({
-            where: { email: req.body.email }
+            where: { token: req.body.token }
         })
     })
+    
+    it('Should return a message successful', async () => {
+        (User.findOne as jest.Mock).mockResolvedValue(true)
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/validate-token',
+            body: {
+                token: '123456'
+            }
+        });
+        const res = createResponse();
+        await AuthController.validateToken(req, res)
+        const data = res._getJSONData()
 
+        expect(res.statusCode).toBe(200)
+        expect(data).toEqual('Token valido')
+        expect(User.findOne).toHaveBeenCalled()
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { token: req.body.token }
+        })
+    })
 })
