@@ -188,3 +188,28 @@ describe('AuthController - forgotPassword', () => {
         expect(AuthEmail.sendResetPassword).toHaveBeenCalledTimes(1)
     })
 })
+
+describe('AuthController - validateToken', () => {
+    it('Should throw error when it token is not valid', async () => {
+        (User.findOne as jest.Mock).mockResolvedValue(false)
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/validate-token',
+            body: {
+                email: 'test@test.com'
+            }
+        })
+        const res = createResponse();
+        await AuthController.forgotPassword(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(404)
+        expect(data).toHaveProperty('error', 'El usuario no existe')
+        expect(User.findOne).toHaveBeenCalled()
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { email: req.body.email }
+        })
+    })
+
+})
