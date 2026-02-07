@@ -153,4 +153,38 @@ describe('AuthController - forgotPassword', () => {
             where: { email: req.body.email }
         })
     })
+
+    it('Should send reset password email', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/forgot-password',
+            body: {
+                email: 'test@test.com'
+            }
+        });
+        const userMock = {
+            token: '123456',
+            save: jest.fn().mockResolvedValue(true)
+        };
+        (User.findOne as jest.Mock).mockResolvedValue(userMock);
+        (generateToken as jest.Mock).mockResolvedValue(userMock.token)
+        jest.spyOn(AuthEmail, "sendResetPassword").mockImplementation(() => Promise.resolve())
+        const res = createResponse();
+        await AuthController.forgotPassword(req, res)
+
+        const data = res._getJSONData()
+
+
+        expect(res.statusCode).toBe(200)
+        expect(data).toEqual('Hemos enviado un email con las instrucciones')
+
+        expect(User.findOne).toHaveBeenCalled()
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { email: req.body.email }
+        })
+
+        expect(userMock.save).toHaveBeenCalled()
+        expect(AuthEmail.sendResetPassword).toHaveBeenCalledTimes(1)
+    })
 })
