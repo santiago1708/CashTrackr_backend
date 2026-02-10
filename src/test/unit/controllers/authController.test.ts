@@ -301,3 +301,24 @@ describe('AuthController - resetPassword', () => {
         expect(userMock.token).toEqual('')
     })
 })
+
+describe('AuthController - user', () => {
+    it('Should return a user', async () => {
+        const req = createRequest({
+            method: 'GET',
+            url: '/api/auth/user',
+            user: {
+                id: 1,
+                name: 'Name test',
+                email: 'test@test.com'
+            }
+        })
+        const res = createResponse();
+        await AuthController.user(req, res)
+
+        const data = res._getJSONData()
+        
+        expect(res.statusCode).toBe(200)
+        expect(data).toEqual(req.user)
+    })
+})
