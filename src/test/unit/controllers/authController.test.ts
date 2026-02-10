@@ -1,3 +1,4 @@
+import { body } from 'express-validator';
 import { createRequest, createResponse } from 'node-mocks-http'
 import User from '../../../models/User'
 import { AuthController } from '../../../controllers/AuthController'
@@ -351,5 +352,47 @@ describe('AuthController - updateCurrentUserPassword', () => {
         expect(User.findByPk).toHaveBeenCalledTimes(1)
         expect(comparePassword).toHaveBeenCalled()
         expect(comparePassword).toHaveBeenCalledTimes(1)
+    })
+
+    it('Should update password with the new password and return a message succesful', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/update-password',
+            body: {
+                password: 'plainPassword',
+                newPassword: 'newpassword'
+            },
+            user: {
+                id: 1
+            }
+        });
+        const userMock = {
+            password: 'hashedPasswordFromDB',
+            save: jest.fn()
+        };
+        const originalPassword = userMock.password;
+        (User.findByPk as jest.Mock).mockResolvedValue(userMock);
+        (comparePassword as jest.Mock).mockResolvedValue(true);
+        (hashPassword as jest.Mock).mockResolvedValue(req.body.newPassword)
+        const res = createResponse();
+        await AuthController.updateCurrentUserPassword(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(200)
+        expect(data).toEqual('Contraseña actualizada con exito!')
+        expect(User.findByPk).toHaveBeenCalled()
+        expect(User.findByPk).toHaveBeenCalledTimes(1)
+        expect(User.findByPk).toHaveBeenCalledWith(req.user.id, { attributes: ['password'] })
+
+        expect(comparePassword).toHaveBeenCalled()
+        expect(comparePassword).toHaveBeenCalledTimes(1)
+        expect(comparePassword).toHaveBeenCalledWith(req.body.password, originalPassword)
+
+        expect(hashPassword).toHaveBeenCalled()
+        expect(hashPassword).toHaveBeenCalledTimes(1)
+        expect(hashPassword).toHaveBeenCalledWith(userMock.password)
+
+        expect(userMock.save).toHaveBeenCalled()
+        expect(userMock.save).toHaveBeenCalledTimes(1)
     })
 })
