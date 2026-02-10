@@ -211,7 +211,7 @@ describe('AuthController - validateToken', () => {
             where: { token: req.body.token }
         })
     })
-    
+
     it('Should return a message successful', async () => {
         (User.findOne as jest.Mock).mockResolvedValue(true)
         const req = createRequest({
@@ -260,5 +260,44 @@ describe('AuthController - resetPassword', () => {
         expect(User.findOne).toHaveBeenCalledWith({
             where: { token: req.headers.token }
         })
+    })
+
+    it('Should return a message succeful and reset password', async () => {
+        const token = '123456'
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/reset-password/:token',
+            body: {
+                password: 'hashpassword'
+            },
+            headers: {
+                token
+            }
+        });
+        const userMock = {
+            token,
+            save: jest.fn().mockResolvedValue(true)
+        };
+        (User.findOne as jest.Mock).mockResolvedValue(userMock);
+        (hashPassword as jest.Mock).mockResolvedValue(req.body.password)
+        const res = createResponse();
+        await AuthController.resetPassword(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(200)
+        expect(data).toEqual('Contraseña actualizada con exito!')
+        expect(User.findOne).toHaveBeenCalled()
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { token }
+        })
+        expect(hashPassword).toHaveBeenCalled()
+        expect(hashPassword).toHaveBeenCalledTimes(1)
+        expect(hashPassword).toHaveBeenCalledWith(req.body.password)
+
+        expect(userMock.save).toHaveBeenCalled()
+        expect(userMock.save).toHaveBeenCalledTimes(1)
+
+        expect(userMock.token).toEqual('')
     })
 })

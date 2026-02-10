@@ -62,7 +62,7 @@ export class AuthController {
             return
         }
     }
-
+//Todo: Falta realizar el testing del login
     static login = async (req: Request, res: Response) => {
         const { email, password } = req.body
         try {
