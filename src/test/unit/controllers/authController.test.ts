@@ -1,8 +1,7 @@
 import { createRequest, createResponse } from 'node-mocks-http'
 import User from '../../../models/User'
-import { users } from '../../mocks/user'
 import { AuthController } from '../../../controllers/AuthController'
-import { hashPassword } from '../../../utils/auth'
+import { comparePassword, hashPassword } from '../../../utils/auth'
 import { generateToken } from '../../../utils/token'
 import { AuthEmail } from '../../../emails/AuthEmail'
 
@@ -317,8 +316,40 @@ describe('AuthController - user', () => {
         await AuthController.user(req, res)
 
         const data = res._getJSONData()
-        
+
         expect(res.statusCode).toBe(200)
         expect(data).toEqual(req.user)
+    })
+})
+
+describe('AuthController - updateCurrentUserPassword', () => {
+    it('Should throw error when current password is incorrect', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/update-password',
+            body: {
+                password: 'wrongPassword',
+                newPassword: 'newpassword'
+            },
+            user: {
+                id: 1
+            }
+        });
+        const userMock = {
+            password: 'hashpasswordgreat'
+
+        };
+        (User.findByPk as jest.Mock).mockResolvedValue(userMock);
+        (comparePassword as jest.Mock).mockResolvedValue(false)
+        const res = createResponse();
+        await AuthController.updateCurrentUserPassword(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(401)
+        expect(data).toHaveProperty('error', 'La contraseña actual es incorrecta')
+        expect(User.findByPk).toHaveBeenCalled()
+        expect(User.findByPk).toHaveBeenCalledTimes(1)
+        expect(comparePassword).toHaveBeenCalled()
+        expect(comparePassword).toHaveBeenCalledTimes(1)
     })
 })
