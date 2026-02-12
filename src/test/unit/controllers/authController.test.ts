@@ -410,7 +410,7 @@ describe('AuthController - CheckPassword', () => {
             }
         });
         const userMock = {
-            password : req.body.password
+            password: req.body.password
         };
         (User.findByPk as jest.Mock).mockResolvedValue(userMock);
         (comparePassword as jest.Mock).mockResolvedValue(false)
@@ -429,5 +429,37 @@ describe('AuthController - CheckPassword', () => {
         expect(comparePassword).toHaveBeenCalled()
         expect(comparePassword).toHaveBeenCalledTimes(1)
         expect(comparePassword).toHaveBeenCalledWith(req.body.password, userMock.password)
+    })
+
+    it('Should check the password and return a message succeful', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/check-password',
+            body: {
+                password: 'password'
+            },
+            user: {
+                id: 1
+            }
+        });
+        const userMock = {
+            password: req.body.password
+        };
+        (User.findByPk as jest.Mock).mockResolvedValue(userMock);
+        (comparePassword as jest.Mock).mockResolvedValue(true)
+        const res = createResponse()
+        await AuthController.checkPassword(req, res)
+
+        const data = res._getJSONData()
+        
+        expect(res.statusCode).toBe(200)
+        expect(data).toEqual('Contraseña correcta!')
+
+        expect(User.findByPk).toHaveBeenCalledWith(req.user.id, {
+            attributes: ['password']
+        })
+        expect(User.findByPk).toHaveBeenCalledTimes(1)
+        expect(comparePassword).toHaveBeenCalledWith(req.body.password, userMock.password)
+        expect(comparePassword).toHaveBeenCalledTimes(1)
     })
 })
