@@ -451,7 +451,7 @@ describe('AuthController - CheckPassword', () => {
         await AuthController.checkPassword(req, res)
 
         const data = res._getJSONData()
-        
+
         expect(res.statusCode).toBe(200)
         expect(data).toEqual('Contraseña correcta!')
 
@@ -461,5 +461,29 @@ describe('AuthController - CheckPassword', () => {
         expect(User.findByPk).toHaveBeenCalledTimes(1)
         expect(comparePassword).toHaveBeenCalledWith(req.body.password, userMock.password)
         expect(comparePassword).toHaveBeenCalledTimes(1)
+    })
+})
+
+describe('AuthController - Login', () => {
+    it('Should throw error when the user is not exist', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+                email: 'test@test.com',
+                password: 'password'
+            }
+        });
+        const res = createResponse();
+        (User.findOne as jest.Mock).mockResolvedValue(false)
+        await AuthController.login(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(404)
+        expect(data).toHaveProperty('error', 'El usuario no existe')
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { email: req.body.email}
+        })
+        expect(User.findOne).toHaveBeenCalledTimes(1)
     })
 })
