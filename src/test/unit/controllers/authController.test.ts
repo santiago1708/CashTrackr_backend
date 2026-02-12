@@ -396,3 +396,38 @@ describe('AuthController - updateCurrentUserPassword', () => {
         expect(userMock.save).toHaveBeenCalledTimes(1)
     })
 })
+
+describe('AuthController - CheckPassword', () => {
+    it('Should throw error if the password is wrong', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/check-password',
+            body: {
+                password: 'password'
+            },
+            user: {
+                id: 1
+            }
+        });
+        const userMock = {
+            password : req.body.password
+        };
+        (User.findByPk as jest.Mock).mockResolvedValue(userMock);
+        (comparePassword as jest.Mock).mockResolvedValue(false)
+        const res = createResponse()
+        await AuthController.checkPassword(req, res)
+
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(401)
+        expect(data).toHaveProperty('error', 'La contraseña actual es incorrecta')
+
+        expect(User.findByPk).toHaveBeenCalled()
+        expect(User.findByPk).toHaveBeenCalledTimes(1)
+        expect(User.findByPk).toHaveBeenCalledWith(req.user.id, { attributes: ['password'] })
+
+        expect(comparePassword).toHaveBeenCalled()
+        expect(comparePassword).toHaveBeenCalledTimes(1)
+        expect(comparePassword).toHaveBeenCalledWith(req.body.password, userMock.password)
+    })
+})
