@@ -482,7 +482,35 @@ describe('AuthController - Login', () => {
         expect(res.statusCode).toBe(404)
         expect(data).toHaveProperty('error', 'El usuario no existe')
         expect(User.findOne).toHaveBeenCalledWith({
-            where: { email: req.body.email}
+            where: { email: req.body.email }
+        })
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+    })
+
+    it('Should throw error when the user is not confirmed', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+                email: 'test@test.com',
+                password: 'password'
+            }
+        });
+        const res = createResponse();
+        const userMock = {
+            user: {
+                confirmed: false
+            }
+        };
+        (User.findOne as jest.Mock).mockResolvedValue(userMock)
+        await AuthController.login(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(403)
+        expect(data).toHaveProperty('error', 'Tu cuenta no ha sido confimada')
+
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { email: req.body.email }
         })
         expect(User.findOne).toHaveBeenCalledTimes(1)
     })
