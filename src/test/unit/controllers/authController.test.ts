@@ -502,7 +502,7 @@ describe('AuthController - Login', () => {
                 confirmed: false
             }
         };
-        (User.findOne as jest.Mock).mockResolvedValue(userMock)
+        (User.findOne as jest.Mock).mockResolvedValue(userMock.user)
         await AuthController.login(req, res)
         const data = res._getJSONData()
 
@@ -513,5 +513,37 @@ describe('AuthController - Login', () => {
             where: { email: req.body.email }
         })
         expect(User.findOne).toHaveBeenCalledTimes(1)
+    })
+
+    it('Should throw error if the password account is incorrect', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+                email: 'test@test.com',
+                password: 'password'
+            }
+        });
+        const res = createResponse();
+        const userMock = {
+            user: {
+                confirmed: true,
+                password: 'wrongPassword'
+            }
+        };
+        (User.findOne as jest.Mock).mockResolvedValue(userMock.user);
+        (comparePassword as jest.Mock).mockResolvedValue(false)
+        await AuthController.login(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(401)
+        expect(data).toHaveProperty('error', 'Los datos son incorrectos')
+
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { email : req.body.email}
+        })
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+        expect(comparePassword).toHaveBeenCalledWith(req.body.password, userMock.user.password)
+        expect(comparePassword).toHaveBeenCalledTimes(1)
     })
 })
