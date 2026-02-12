@@ -1,14 +1,16 @@
-import { body } from 'express-validator';
-import { createRequest, createResponse } from 'node-mocks-http'
-import User from '../../../models/User'
-import { AuthController } from '../../../controllers/AuthController'
-import { comparePassword, hashPassword } from '../../../utils/auth'
-import { generateToken } from '../../../utils/token'
-import { AuthEmail } from '../../../emails/AuthEmail'
+import { createRequest, createResponse } from 'node-mocks-http';
+import User from '../../../models/User';
+import { AuthController } from '../../../controllers/AuthController';
+import { comparePassword, hashPassword } from '../../../utils/auth';
+import { generateToken } from '../../../utils/token';
+import { AuthEmail } from '../../../emails/AuthEmail';
+import { generateJWT } from '../../../utils/jwt';
 
 jest.mock('../../../models/User')
 jest.mock('../../../utils/auth')
 jest.mock('../../../utils/token')
+jest.mock('../../../utils/jwt')
+
 
 beforeEach(() => {
     jest.resetAllMocks() //Importante si quieres que ningun otro mock herede en otra prueba
@@ -498,11 +500,9 @@ describe('AuthController - Login', () => {
         });
         const res = createResponse();
         const userMock = {
-            user: {
-                confirmed: false
-            }
+            confirmed: false
         };
-        (User.findOne as jest.Mock).mockResolvedValue(userMock.user)
+        (User.findOne as jest.Mock).mockResolvedValue(userMock)
         await AuthController.login(req, res)
         const data = res._getJSONData()
 
@@ -526,12 +526,10 @@ describe('AuthController - Login', () => {
         });
         const res = createResponse();
         const userMock = {
-            user: {
-                confirmed: true,
-                password: 'wrongPassword'
-            }
+            confirmed: true,
+            password: 'wrongPassword'
         };
-        (User.findOne as jest.Mock).mockResolvedValue(userMock.user);
+        (User.findOne as jest.Mock).mockResolvedValue(userMock);
         (comparePassword as jest.Mock).mockResolvedValue(false)
         await AuthController.login(req, res)
         const data = res._getJSONData()
@@ -540,10 +538,46 @@ describe('AuthController - Login', () => {
         expect(data).toHaveProperty('error', 'Los datos son incorrectos')
 
         expect(User.findOne).toHaveBeenCalledWith({
-            where: { email : req.body.email}
+            where: { email: req.body.email }
         })
         expect(User.findOne).toHaveBeenCalledTimes(1)
-        expect(comparePassword).toHaveBeenCalledWith(req.body.password, userMock.user.password)
+        expect(comparePassword).toHaveBeenCalledWith(req.body.password, userMock.password)
         expect(comparePassword).toHaveBeenCalledTimes(1)
+    })
+
+    it('Should generate JWT if all its good', async () => {
+        const req = createRequest({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+                email: 'test@test.com',
+                password: 'password'
+            }
+        });
+        const res = createResponse();
+        const userMock = {
+            id: 1,
+            confirmed: true,
+            password: 'password',
+        };
+        (User.findOne as jest.Mock).mockResolvedValue(userMock);
+        (comparePassword as jest.Mock).mockResolvedValue(true);
+        (generateJWT as jest.Mock).mockReturnValue('fake-jwt-token')
+        await AuthController.login(req, res)
+        const data = res._getJSONData()
+
+        expect(res.statusCode).toBe(200)
+        expect(generateJWT).toHaveBeenCalled()
+        expect(generateJWT).toHaveBeenCalledWith(userMock.id)
+
+        expect(User.findOne).toHaveBeenCalledWith({
+            where: { email: req.body.email }
+        })
+        expect(User.findOne).toHaveBeenCalledTimes(1)
+
+        expect(comparePassword).toHaveBeenCalledWith(req.body.password, userMock.password)
+        expect(comparePassword).toHaveBeenCalledTimes(1)
+
+        expect(data).toEqual('fake-jwt-token')
     })
 })
